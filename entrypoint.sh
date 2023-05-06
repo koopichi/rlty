@@ -45,7 +45,7 @@ else
   fi
   # change config
   jq ".inbounds[0].settings.clients[0].id=\"$UUID\"" /config.json >/config.json_tmp && mv /config.json_tmp /config.json
-  jq ".inbounds[0].settings.clients[0].flow=\"$FLOW\"" /config.json >/config.json_tmp && mv /config.json_tmp /config.json
+  jq ".inbounds[0].settings.clients[1].flow=\"$FLOW\"" /config.json >/config.json_tmp && mv /config.json_tmp /config.json
   jq ".inbounds[0].streamSettings.realitySettings.dest=\"$DEST\"" /config.json >/config.json_tmp && mv /config.json_tmp /config.json
 
   SERVERNAMES_JSON_ARRAY="$(echo "[$(echo $SERVERNAMES | awk '{for(i=1;i<=NF;i++) printf "\"%s\",", $i}' | sed 's/,$//')]")"
