@@ -57,10 +57,18 @@ as well as custom target address and server name, as shown below. For supported 
 Use spaces to separate multiple SERVERNAMES, for example: www.apple.com images.apple.com
 
 Please note that if you use custom parameters, you need to ensure the correctness of the parameters yourself, otherwise the container may fail to start
+
+#GRPC
+```
+EXTERNAL_PORT=8443
+docker run -d --name xray_GRPC --restart=always -p $EXTERNAL_PORT:443 -e EXTERNAL_PORT=$EXTERNAL_PORT -e SERVERNAMES="www.digicert.com" -e DEST="www.digicert.com:443"  reality
+```
+#TCP
 ```
 EXTERNAL_PORT=443
-docker run -d --name xray_reality --restart=always -p $EXTERNAL_PORT:443 -e EXTERNAL_PORT=$EXTERNAL_PORT -e SERVERNAMES="www.digicert.com" -e DEST="www.digicert.com:443"  reality
+docker run -d --name xray_TCP --restart=always -p $EXTERNAL_PORT:443 -e EXTERNAL_PORT=$EXTERNAL_PORT -e SERVERNAMES="www.digicert.com" -e DEST="www.digicert.com:443" -e NETWORK="tcp"  reality
 ```
+
 
 Use the following command to delete the created container, as shown below, you need to replace xray_reality with your own container name (the name set by --name)
 
