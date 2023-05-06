@@ -1,7 +1,5 @@
 ## xray_docker_reality
-xray reality docker image
 
-[![xray_docker_reality_docker_image_build](https://github.com/wulabing/xray_docker/actions/workflows/xray_docker_reality.yml/badge.svg)](https://github.com/wulabing/xray_docker/actions/workflows/xray_docker_reality.yml)
 
 ## Basic Usage
 If you don't have docker installed, please install docker first
@@ -14,10 +12,18 @@ If you have already installed docker, you can directly use the following command
 the image will be downloaded automatically and the container will be started.
 EXTERNAL_PORT is the port you want to use. As shown below, you will use port 443
 
+clone git
 ```
-docker pull wulabing/xray_docker_reality:latest
+git clone https://github.com/koopichi/rlty.git
+```
+build container
+```
+cd rlty && docker build -t reality .
+```
+
+```
 EXTERNAL_PORT=443
-docker run -d --name xray_reality --restart=always -p $EXTERNAL_PORT:443 -e EXTERNAL_PORT=$EXTERNAL_PORT wulabing/xray_docker_reality:latest
+docker run -d --name arash --restart=always -p $EXTERNAL_PORT:443 -e EXTERNAL_PORT=$EXTERNAL_PORT reality
 ```
 
 Check the log to get the configuration information, as shown below, just follow the prompts to configure the client,
@@ -32,7 +38,7 @@ If you don't want to use port 443, you can customize the port, for example, use 
 
 ```
 EXTERNAL_PORT=8443
-docker run -d --name xray_reality --restart=always -p $EXTERNAL_PORT:443 -e EXTERNAL_PORT=$EXTERNAL_PORT wulabing/xray_docker_reality:latest
+docker run -d --name xray_reality --restart=always -p $EXTERNAL_PORT:443 -e EXTERNAL_PORT=$EXTERNAL_PORT reality
 ```
 
 If you want to start multiple reality services, you can use different container names, and be careful not to conflict with the ports.
@@ -40,9 +46,9 @@ As shown below, you will start two reality services, using ports 444 and 445 res
 
 ```
 EXTERNAL_PORT=444
-docker run -d --name xray_reality_1 --restart=always -p $EXTERNAL_PORT:443 -e EXTERNAL_PORT=$EXTERNAL_PORT wulabing/xray_docker_reality:latest
+docker run -d --name xray_reality_1 --restart=always -p $EXTERNAL_PORT:443 -e EXTERNAL_PORT=$EXTERNAL_PORT reality
 EXTERNAL_PORT=445
-docker run -d --name xray_reality_2 --restart=always -p $EXTERNAL_PORT:443 -e EXTERNAL_PORT=$EXTERNAL_PORT wulabing/xray_docker_reality:latest
+docker run -d --name xray_reality_2 --restart=always -p $EXTERNAL_PORT:443 -e EXTERNAL_PORT=$EXTERNAL_PORT reality
 ```
 
 If you don't want to use the default parameters, you can customize the parameters, such as using a custom UUID,
@@ -53,7 +59,7 @@ Use spaces to separate multiple SERVERNAMES, for example: www.apple.com images.a
 Please note that if you use custom parameters, you need to ensure the correctness of the parameters yourself, otherwise the container may fail to start
 ```
 EXTERNAL_PORT=443
-docker run -d --name xray_reality --restart=always -p $EXTERNAL_PORT:443 -e EXTERNAL_PORT=$EXTERNAL_PORT -e UUID="XXX" -e SERVERNAMES="www.apple.com images.apple.com" -e DEST="www.apple.com:443" -e PRIVATEKEY="XXX" wulabing/xray_docker_reality:latest
+docker run -d --name xray_reality --restart=always -p $EXTERNAL_PORT:443 -e EXTERNAL_PORT=$EXTERNAL_PORT -e SERVERNAMES="www.digicert.com" -e DEST="www.digicert.com:443"  reality
 ```
 
 Use the following command to delete the created container, as shown below, you need to replace xray_reality with your own container name (the name set by --name)
