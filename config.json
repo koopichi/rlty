@@ -46,7 +46,7 @@
         "clients": [
           {
             "id": "xx",
-            "flow": ""
+            "flow": "xx"
           }
         ],
         "decryption": "none"
