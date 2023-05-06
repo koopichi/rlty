@@ -67,7 +67,7 @@ else
   echo "PUBLICKEY: $PUBLICKEY" >>/config_info.txt
   echo "NETWORK: $NETWORK" >>/config_info.txt
   if [ "$IPV4" != "null" ]; then
-    SUB_IPV4="vless://$UUID@$IPV4:$EXTERNAL_PORT?encryption=none&security=reality&type=$NETWORK&sni=$FIRST_SERVERNAME&fp=chrome&pbk=$PUBLICKEY&flow=xtls-rprx-vision#wulabing_docker_vless_reality_vision"
+    SUB_IPV4="vless://$UUID@$IPV4:$EXTERNAL_PORT?encryption=none&security=reality&type=$NETWORK&sni=$FIRST_SERVERNAME&fp=chrome&pbk=$PUBLICKEY&flow=$FLOW#reality|$NETWORK"
     echo "IPV4 订阅连接: $SUB_IPV4" >>/config_info.txt
     echo -e "IPV4 订阅二维码:\n$(echo "$SUB_IPV4" | qrencode -o - -t UTF8)" >>/config_info.txt
   fi
