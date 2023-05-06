@@ -46,7 +46,7 @@
         "clients": [
           {
             "id": "xx",
-            "flow": "xtls-rprx-vision"
+            "flow": ""
           }
         ],
         "decryption": "none"
