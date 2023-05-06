@@ -14,11 +14,11 @@ EXTERNAL_PORT is the port you want to use. As shown below, you will use port 443
 
 clone git
 ```
-git clone https://github.com/koopichi/rlty.git
+git clone https://github.com/koopichi/rlty.git && cd rlty
 ```
 build container
 ```
-cd rlty && docker build -t reality .
+docker build -t reality .
 ```
 
 ```
