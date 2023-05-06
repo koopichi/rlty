@@ -35,8 +35,8 @@ else
   fi
 
   if [ -z "$NETWORK" ]; then
-    echo "NETWORK is not set,set default value tcp"
-    NETWORK="tcp"
+    echo "NETWORK is not set,set default value grpc"
+    NETWORK="grpc"
   fi
   # change config
   jq ".inbounds[0].settings.clients[0].id=\"$UUID\"" /config.json >/config.json_tmp && mv /config.json_tmp /config.json
