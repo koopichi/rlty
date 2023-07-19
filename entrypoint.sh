@@ -62,19 +62,19 @@ else
   echo "UUID: $UUID" >>/config_info.txt
   echo "DEST: $DEST" >>/config_info.txt
   echo "PORT: $EXTERNAL_PORT" >>/config_info.txt
-  echo "SERVERNAMES: $SERVERNAMES (任选其一)" >>/config_info.txt
+  echo "SERVERNAMES: $SERVERNAMES" >>/config_info.txt
   echo "PRIVATEKEY: $PRIVATEKEY" >>/config_info.txt
   echo "PUBLICKEY: $PUBLICKEY" >>/config_info.txt
   echo "NETWORK: $NETWORK" >>/config_info.txt
   if [ "$IPV4" != "null" ]; then
     SUB_IPV4="vless://$UUID@$IPV4:$EXTERNAL_PORT?encryption=none&security=reality&type=$NETWORK&sni=$FIRST_SERVERNAME&fp=chrome&pbk=$PUBLICKEY&flow=$FLOW#reality|$NETWORK|$FIRST_SERVERNAME"
-    echo "IPV4 订阅连接: $SUB_IPV4" >>/config_info.txt
-    echo -e "IPV4 订阅二维码:\n$(echo "$SUB_IPV4" | qrencode -o - -t UTF8)" >>/config_info.txt
+    echo "IPV4: $SUB_IPV4" >>/config_info.txt
+    echo -e "IPV4:\n$(echo "$SUB_IPV4" | qrencode -o - -t UTF8)" >>/config_info.txt
   fi
   if [ "$IPV6" != "null" ];then
     SUB_IPV6="vless://$UUID@$IPV6:$EXTERNAL_PORT?encryption=none&security=reality&type=$NETWORK&sni=$FIRST_SERVERNAME&fp=chrome&pbk=$PUBLICKEY&flow=$FLOW#IPV6reality|$NETWORK|$FIRST_SERVERNAME"
-    echo "IPV6 订阅连接: $SUB_IPV6" >>/config_info.txt
-    echo -e "IPV6 订阅二维码:\n$(echo "$SUB_IPV6" | qrencode -o - -t UTF8)" >>/config_info.txt
+    echo "IPV6: $SUB_IPV6" >>/config_info.txt
+    echo -e "IPV6:\n$(echo "$SUB_IPV6" | qrencode -o - -t UTF8)" >>/config_info.txt
   fi
 
 
