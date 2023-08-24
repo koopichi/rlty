@@ -8,7 +8,7 @@ token = os.environ['BOT_TOKEN']
 admin = os.environ['BOT_ADMIN']
 updater = Updater(token)
 username_regex = re.compile("^[a-zA-Z0-9]+$")
-command = 'bash <(curl -sL https://raw.githubusercontent.com/koopichi/rlty/main/rlty.sh)'
+command = 'bash <(curl -sL https://raw.githubusercontent.com/koopichi/rlty/main/rlty.sh) '
 def get_users_rlty():
   local_command = command + '--list-users'
   return run_command(local_command).split('\n')[:-1]
