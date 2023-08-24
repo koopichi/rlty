@@ -8,7 +8,7 @@ token = os.environ['5637711941:AAHWUKQ8-ozLEjnCcrHX_6T4FEkss0M9Tnk']
 admin = os.environ[1042982035]
 updater = Updater(token)
 username_regex = re.compile("^[a-zA-Z0-9]+$")
-command = 'bash <(curl -sL https://raw.githubusercontent.com/koopichi/rlty/master/rlty.sh)'
+command = 'bash <(curl -sL https://raw.githubusercontent.com/koopichi/rlty/main/rlty.sh)'
 def get_users_ezpz():
   local_command = command + '--list-users'
   return run_command(local_command).split('\n')[:-1]
