@@ -4,22 +4,22 @@ from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, MessageH
 import re
 import subprocess
 
-token = os.environ['5637711941:AAHWUKQ8-ozLEjnCcrHX_6T4FEkss0M9Tnk']
-admin = os.environ[1042982035]
+token = os.environ['BOT_TOKEN']
+admin = os.enviro['BOT_ADMIN']
 updater = Updater(token)
 username_regex = re.compile("^[a-zA-Z0-9]+$")
 command = 'bash <(curl -sL https://raw.githubusercontent.com/koopichi/rlty/main/rlty.sh)'
-def get_users_ezpz():
+def get_users_rlty():
   local_command = command + '--list-users'
   return run_command(local_command).split('\n')[:-1]
-def get_config_ezpz(username):
+def get_config_rlty(username):
   local_command = command + f'--show-user {username} | grep vless://'
   return run_command(local_command)
-def delete_user_ezpz(username):
+def delete_user_rlty(username):
   local_command = command + f'--delete-user {username}'
   run_command(local_command)
   return
-def add_user_ezpz(username):
+def add_user_rlty(username):
   local_command = command + f'--add-user {username}'
   run_command(local_command)
   return
@@ -57,7 +57,7 @@ def start(update, context):
 @restricted
 def users_list(update, context, text, callback):
   keyboard = []
-  for user in get_users_ezpz():
+  for user in get_users_rlty():
     keyboard.append([InlineKeyboardButton(user, callback_data=f'{callback}!{user}')])
   keyboard.append([InlineKeyboardButton('Back', callback_data='start')])
   reply_markup = InlineKeyboardMarkup(keyboard)
@@ -65,7 +65,7 @@ def users_list(update, context, text, callback):
 
 @restricted
 def show_user(update, context, username):
-  text = get_config_ezpz(username)
+  text = get_config_rlty(username)
   keyboard = []
   keyboard.append([InlineKeyboardButton('Back', callback_data='show_user')])
   reply_markup = InlineKeyboardMarkup(keyboard)
@@ -75,7 +75,7 @@ def show_user(update, context, username):
 @restricted
 def delete_user(update, context, username):
   keyboard = []
-  if len(get_users_ezpz()) == 1:
+  if len(get_users_rlty()) == 1:
     text = 'You cannot delete the only user.\nAt least one user is needed.\nCreate a new user, then delete this one.'
     keyboard.append([InlineKeyboardButton('Back', callback_data='start')])
     reply_markup = InlineKeyboardMarkup(keyboard)
@@ -98,7 +98,7 @@ def add_user(update, context):
 
 @restricted
 def approve_delete(update, context, username):
-  delete_user_ezpz(username)
+  delete_user_rlty(username)
   text = f'User {username} has been deleted.'
   keyboard = []
   keyboard.append([InlineKeyboardButton('Back', callback_data='start')])
@@ -144,7 +144,7 @@ def user_input(update, context):
     del context.user_data['expected_input']
     if expected_input == 'username':
       username = update.message.text
-      if username in get_users_ezpz():
+      if username in get_users_rlty():
         update.message.reply_text(f'User "{username}" exists, try another username.')
         add_user(update, context)
         return
@@ -152,7 +152,7 @@ def user_input(update, context):
         update.message.reply_text('Username can only contains A-Z, a-z and 0-9, try another username.')
         add_user(update, context)
         return
-      add_user_ezpz(username)
+      add_user_rlty(username)
       update.message.reply_text(f'User "{username}" is created.')
       show_user(update, context, username)
 
