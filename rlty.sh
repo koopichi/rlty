@@ -411,7 +411,7 @@ function restore_defaults {
 }
 
 function build_config {
-  local free_80=true
+  local free_8081=true
   if [[ ${args[regenerate]} == true ]]; then
     generate_keys
   fi
@@ -449,17 +449,17 @@ function build_config {
     exit 1
   fi
   if [[ ${config[security]} == 'letsencrypt' && ${config[port]} -ne 8443 ]]; then
-    if lsof -i :80 >/dev/null 2>&1; then
-      free_80=false
+    if lsof -i :8081 >/dev/null 2>&1; then
+      free_8081=false
       for container in $(${docker_cmd} -p ${compose_project} ps -q); do
-        if docker port "${container}"| grep '0.0.0.0:80' >/dev/null 2>&1; then
-          free_80=true
+        if docker port "${container}"| grep '0.0.0.0:8081' >/dev/null 2>&1; then
+          free_8081=true
           break
         fi
       done
     fi
-    if [[ ${free_80} != 'true' ]]; then
-      echo 'Port 80 must be free if you want to use "letsencrypt" as the security option.'
+    if [[ ${free_8081} != 'true' ]]; then
+      echo 'Port 8081 must be free if you want to use "letsencrypt" as the security option.'
       exit 1
     fi
   fi
@@ -597,7 +597,7 @@ services:
   engine:
     image: ${image[${config[core]}]}
     $([[ ${config[security]} == 'reality' ]] && echo "ports:" || true)
-    $([[ ${config[security]} == 'reality' && ${config[port]} -eq 8443 ]] && echo '- 80:8080' || true)
+    $([[ ${config[security]} == 'reality' && ${config[port]} -eq 8443 ]] && echo '- 8081:8080' || true)
     $([[ ${config[security]} == 'reality' ]] && echo "- ${config[port]}:8443" || true)
     $([[ ${config[security]} != 'reality' ]] && echo "expose:" || true)
     $([[ ${config[security]} != 'reality' ]] && echo "- 8443" || true)
@@ -615,14 +615,14 @@ echo "
   nginx:
     image: ${image[nginx]}
     expose:
-    - 80
+    - 8081
     restart: always
     networks:
     - reality
   haproxy:
     image: ${image[haproxy]}
     ports:
-    $([[ ${config[security]} == 'letsencrypt' || ${config[port]} -eq 8443 ]] && echo '- 80:8080' || true)
+    $([[ ${config[security]} == 'letsencrypt' || ${config[port]} -eq 8443 ]] && echo '- 8081:8080' || true)
     - ${config[port]}:8443
     restart: always
     volumes:
@@ -637,7 +637,7 @@ echo "
     build:
       context: ./certbot
     expose:
-    - 80
+    - 8081
     restart: always
     volumes:
     - /var/run/docker.sock:/var/run/docker.sock
@@ -706,10 +706,10 @@ backend engine
   server engine engine:8443 check tfo $([[ ${config[transport]} == 'grpc' ]] && echo 'proto h2' || true) $([[ ${config[transport]} == 'http' ]] && echo 'ssl verify none' "$([[ ${config[core]} == sing-box ]] && echo 'proto h2' || true)" || true)
 $([[ ${config[security]} == 'letsencrypt' ]] && echo 'backend certbot' || true)
 $([[ ${config[security]} == 'letsencrypt' ]] && echo '  mode http' || true)
-$([[ ${config[security]} == 'letsencrypt' ]] && echo '  server certbot certbot:80' || true)
+$([[ ${config[security]} == 'letsencrypt' ]] && echo '  server certbot certbot:8081' || true)
 backend default
   mode http
-  server nginx nginx:80
+  server nginx nginx:8081
 EOF
 }
 
@@ -870,7 +870,7 @@ function generate_engine_config {
       "listen_port": 8080,
       "network": "tcp",
       "override_address": "${config[domain]%%:*}",
-      "override_port": 80
+      "override_port": 8081
     },
     {
       "type": "vless",
@@ -1028,7 +1028,7 @@ EOF
       "protocol": "dokodemo-door",
       "settings": {
         "address": "${config[domain]%%:*}",
-        "port": 80,
+        "port": 8081,
         "network": "tcp"
       }
     },
@@ -1617,7 +1617,7 @@ function config_sni_domain_menu {
 
 function config_security_menu {
   local security
-  local free_80=true
+  local free_8081=true
   while true; do
     security=$(whiptail --clear --backtitle "$BACKTITLE" --title "Security Type" \
       --radiolist --noitem "Select a security type:" $HEIGHT $WIDTH $CHOICE_HEIGHT \
@@ -1637,17 +1637,17 @@ function config_security_menu {
       continue
     fi
     if [[ ${security} == 'letsencrypt' && ${config[port]} -ne 8443 ]]; then
-      if lsof -i :80 >/dev/null 2>&1; then
-        free_80=false
+      if lsof -i :8081 >/dev/null 2>&1; then
+        free_8081=false
         for container in $(${docker_cmd} -p ${compose_project} ps -q); do
           if docker port "${container}" | grep '0.0.0.0:80' >/dev/null 2>&1; then
-            free_80=true
+            free_8081=true
             break
           fi
         done
       fi
-      if [[ ${free_80} != 'true' ]]; then
-        message_box 'Port 80 must be free if you want to use "letsencrypt" as the security option.'
+      if [[ ${free_8081} != 'true' ]]; then
+        message_box 'Port 8081 must be free if you want to use "letsencrypt" as the security option.'
         continue
       fi
     fi
