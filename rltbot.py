@@ -5,7 +5,7 @@ import re
 import subprocess
 
 token = os.environ['BOT_TOKEN']
-admin = os.enviro['BOT_ADMIN']
+admin = os.environ['BOT_ADMIN']
 updater = Updater(token)
 username_regex = re.compile("^[a-zA-Z0-9]+$")
 command = 'bash <(curl -sL https://raw.githubusercontent.com/koopichi/rlty/main/rlty.sh)'
