@@ -15,7 +15,7 @@ declare -A image
 config_path="/opt/rlty"
 compose_project='rlty'
 rltbot_project='rltbot'
-BACKTITLE=rlty
+BACKTITLE=koopichi
 MENU="Select an option:"
 HEIGHT=30
 WIDTH=60
@@ -378,8 +378,8 @@ function parse_users_file {
     fi
   fi
   if [[ ${#users[@]} -eq 0 ]]; then
-    users[rlty]=$(cat /proc/sys/kernel/random/uuid)
-    echo "rlty=${users[rlty]}" >> "${path[users]}"
+    users[koopichi]=$(cat /proc/sys/kernel/random/uuid)
+    echo "koopichi=${users[koopichi]}" >> "${path[users]}"
     return 0
   fi
   return 0
@@ -540,7 +540,7 @@ function uninstall {
     docker-compose --project-directory "${config_path}/rltbot" -p ${rltbot_project} down --timeout 2 || true
   fi
   rm -rf "${config_path}"
-  echo "Reality-rlty uninstalled successfully."
+  echo "rlty uninstalled successfully."
   exit 0
 }
 
@@ -1200,7 +1200,7 @@ function upgrade {
   uuid=$(grep '^uuid=' "${path[config]}" 2>/dev/null | cut -d= -f2 || true)
   if [[ -n $uuid ]]; then
     sed -i '/^uuid=/d' "${path[users]}"
-    echo "rlty=${uuid}" >> "${path[users]}"
+    echo "koopichi=${uuid}" >> "${path[users]}"
     sed -i 's|=true|=ON|g; s|=false|=OFF|g' "${path[users]}"
   fi
   rm -f "${config_path}/xray.conf"
