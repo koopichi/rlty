@@ -1,3 +1,5 @@
+#!/bin/bash
+
 set -e
 declare -A defaults
 declare -A config_file
@@ -12,7 +14,7 @@ declare -A image
 
 config_path="/opt/rlty"
 compose_project='rlty'
-rltybot_project='rltybot'
+rltbot_project='rltbot'
 BACKTITLE=rlty
 MENU="Select an option:"
 HEIGHT=30
@@ -29,7 +31,7 @@ image[wgcf]="virb3/wgcf:2.2.18"
 
 defaults[transport]=tcp
 defaults[domain]=www.google.com
-defaults[port]=443
+defaults[port]=8443
 defaults[safenet]=OFF
 defaults[warp]=OFF
 defaults[warp_license]=""
@@ -42,9 +44,9 @@ defaults[warp_interface_ipv6]=""
 defaults[core]=sing-box
 defaults[security]=reality
 defaults[server]=$(curl -fsSL --ipv4 https://cloudflare.com/cdn-cgi/trace | grep ip | cut -d '=' -f2)
-defaults[rltybot]=OFF
-defaults[rltybot_token]=""
-defaults[rltybot_admins]=""
+defaults[rltbot]=OFF
+defaults[rltbot_token]=""
+defaults[rltbot_admins]=""
 
 config_items=(
   "core"
@@ -66,9 +68,9 @@ config_items=(
   "warp_client_id"
   "warp_interface_ipv4"
   "warp_interface_ipv6"
-  "rltybot"
-  "rltybot_token"
-  "rltybot_admins"
+  "rltbot"
+  "rltbot_token"
+  "rltbot_admins"
 )
 
 regex[domain]="^[a-zA-Z0-9]+([-.][a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$"
@@ -76,8 +78,8 @@ regex[port]="^[1-9][0-9]*$"
 regex[warp_license]="^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{8}-[a-zA-Z0-9]{8}$"
 regex[username]="^[a-zA-Z0-9]+$"
 regex[ip]="^([0-9]{1,3}\.){3}[0-9]{1,3}$"
-regex[rltybot_token]="^[0-9]{8,10}:[a-zA-Z0-9_-]{35}$"
-regex[rltybot_admins]="^[a-zA-Z][a-zA-Z0-9_]{4,31}(,[a-zA-Z][a-zA-Z0-9_]{4,31})*$"
+regex[rltbot_token]="^[0-9]{8,10}:[a-zA-Z0-9_-]{35}$"
+regex[rltbot_admins]="^[a-zA-Z][a-zA-Z0-9_]{4,31}(,[a-zA-Z][a-zA-Z0-9_]{4,31})*$"
 regex[domain_port]="^[a-zA-Z0-9]+([-.][a-zA-Z0-9]+)*\.[a-zA-Z]{2,}(:[1-9][0-9]*)?$"
 
 function show_help {
@@ -101,9 +103,9 @@ function show_help {
   echo "  -c  --core <sing-box|xray> Select core (xray, sing-box, default: ${defaults[core]})"
   echo "      --security <reality|letsencrypt|selfsigned> Select type of TLS encryption (reality, letsencrypt, selfsigned, default: ${defaults[security]})" 
   echo "  -m  --menu                Show menu"
-  echo "      --enable-rltybot <true|false> Enable Telegram bot for user management"
-  echo "      --rltybot-token <token> Token of Telegram bot"
-  echo "      --rltybot-admins <telegram-username> Usernames of telegram bot admins (Comma separated list of usernames without leading '@')"
+  echo "      --enable-rltbot <true|false> Enable Telegram bot for user management"
+  echo "      --rltbot-token <token> Token of Telegram bot"
+  echo "      --rltbot-admins <telegram-username> Usernames of telegram bot admins (Comma separated list of usernames without leading '@')"
   echo "      --show-server-config  Print server configuration"
   echo "      --add-user <username> Add new user"
   echo "      --list-users          List all users"
@@ -115,7 +117,7 @@ function show_help {
 
 function parse_args {
   local opts
-  opts=$(getopt -o t:d:ruc:mh --long transport:,domain:,server:,regenerate,default,restart,uninstall,enable-safenet:,port:,warp-license:,enable-warp:,core:,security:,menu,show-server-config,add-user:,list-users,show-user:,delete-user:,enable-rltybot:,rltybot-token:,rltybot-admins:,help -- "$@")
+  opts=$(getopt -o t:d:ruc:mh --long transport:,domain:,server:,regenerate,default,restart,uninstall,enable-safenet:,port:,warp-license:,enable-warp:,core:,security:,menu,show-server-config,add-user:,list-users,show-user:,delete-user:,enable-rltbot:,rltbot-token:,rltbot-admins:,help -- "$@")
   if [[ $? -ne 0 ]]; then
     return 1
   fi
@@ -237,34 +239,34 @@ function parse_args {
         args[menu]=true
         shift
         ;;
-      --enable-rltybot)
+      --enable-rltbot)
         case "$2" in
           true|false)
-            $2 && args[rltybot]=ON || args[rltybot]=OFF
+            $2 && args[rltbot]=ON || args[rltbot]=OFF
             shift 2
             ;;
           *)
-            echo "Invalid enable-rltybot option: $2"
+            echo "Invalid enable-rltbot option: $2"
             return 1
             ;;
         esac
         ;;
-      --rltybot-token)
-        args[rltybot_token]="$2"
-        if [[ ! ${args[rltybot_token]} =~ ${regex[rltybot_token]} ]]; then
-          echo "Invalid Telegram Bot Token: ${args[rltybot_token]}"
+      --rltbot-token)
+        args[rltbot_token]="$2"
+        if [[ ! ${args[rltbot_token]} =~ ${regex[rltbot_token]} ]]; then
+          echo "Invalid Telegram Bot Token: ${args[rltbot_token]}"
           return 1
         fi 
-        if ! curl -sSfL "https://api.telegram.org/bot${args[rltybot_token]}/getMe" >/dev/null 2>&1; then
+        if ! curl -sSfL "https://api.telegram.org/bot${args[rltbot_token]}/getMe" >/dev/null 2>&1; then
           echo "Invalid Telegram Bot Token: Telegram Bot Token is incorrect. Check it again."
           return 1
         fi
         shift 2
         ;;
-      --rltybot-admins)
-        args[rltybot_admins]="$2"
-        if [[ ! ${args[rltybot_admins]} =~ ${regex[rltybot_admins]} || $rltybot_admins =~ .+_$ || $rltybot_admins =~ .+_,.+ ]]; then
-          echo "Invalid Telegram Bot Admins Username: ${args[rltybot_admins]}\nThe usernames must separated by ',' without leading '@' character or any extra space."
+      --rltbot-admins)
+        args[rltbot_admins]="$2"
+        if [[ ! ${args[rltbot_admins]} =~ ${regex[rltbot_admins]} || $rltbot_admins =~ .+_$ || $rltbot_admins =~ .+_,.+ ]]; then
+          echo "Invalid Telegram Bot Admins Username: ${args[rltbot_admins]}\nThe usernames must separated by ',' without leading '@' character or any extra space."
          return 1
         fi
         shift 2
@@ -388,7 +390,7 @@ function restore_defaults {
   local keep=false
   local exclude_list=(
     "warp_license"
-    "rltybot_token"
+    "rltbot_token"
   )
   if [[ -n ${config[warp_id]} && -n ${config[warp_token]} ]]; then
     warp_delete_account "${config[warp_id]}" "${config[warp_token]}"
@@ -426,12 +428,12 @@ function build_config {
     restore_defaults
     return 0
   fi
-  if [[ ${config[rltybot]} == 'ON' && -z ${config[rltybot_token]} ]]; then
-    echo 'To enable Telegram bot, you have to give the token of bot with --rltybot-token option.'
+  if [[ ${config[rltbot]} == 'ON' && -z ${config[rltbot_token]} ]]; then
+    echo 'To enable Telegram bot, you have to give the token of bot with --rltbot-token option.'
     exit 1
   fi
-  if [[ ${config[rltybot]} == 'ON' && -z ${config[rltybot_admins]} ]]; then
-    echo 'To enable Telegram bot, you have to give the list of authorized Telegram admins username with --rltybot-admins option.'
+  if [[ ${config[rltbot]} == 'ON' && -z ${config[rltbot_admins]} ]]; then
+    echo 'To enable Telegram bot, you have to give the list of authorized Telegram admins username with --rltbot-admins option.'
     exit 1
   fi
   if [[ ${config[warp]} == 'ON' && -z ${config[warp_license]} ]]; then
@@ -446,7 +448,7 @@ function build_config {
     echo 'You cannot use "ws" transport with "reality" TLS certificate. Use other transports or change TLS certifcate to letsencrypt or selfsigned'
     exit 1
   fi
-  if [[ ${config[security]} == 'letsencrypt' && ${config[port]} -ne 443 ]]; then
+  if [[ ${config[security]} == 'letsencrypt' && ${config[port]} -ne 8443 ]]; then
     if lsof -i :80 >/dev/null 2>&1; then
       free_80=false
       for container in $(${docker_cmd} -p ${compose_project} ps -q); do
@@ -531,14 +533,14 @@ function uninstall {
   if docker compose >/dev/null 2>&1; then
     docker compose --project-directory "${config_path}" down --timeout 2 || true
     docker compose --project-directory "${config_path}" -p ${compose_project} down --timeout 2 || true
-    docker compose --project-directory "${config_path}/rltybot" -p ${rltybot_project} down --timeout 2 || true
+    docker compose --project-directory "${config_path}/rltbot" -p ${rltbot_project} down --timeout 2 || true
   elif which docker-compose >/dev/null 2>&1; then
     docker-compose --project-directory "${config_path}" down --timeout 2 || true
     docker-compose --project-directory "${config_path}" -p ${compose_project} down --timeout 2 || true
-    docker-compose --project-directory "${config_path}/rltybot" -p ${rltybot_project} down --timeout 2 || true
+    docker-compose --project-directory "${config_path}/rltbot" -p ${rltbot_project} down --timeout 2 || true
   fi
   rm -rf "${config_path}"
-  echo "rlty uninstalled successfully."
+  echo "Reality-rlty uninstalled successfully."
   exit 0
 }
 
@@ -595,7 +597,7 @@ services:
   engine:
     image: ${image[${config[core]}]}
     $([[ ${config[security]} == 'reality' ]] && echo "ports:" || true)
-    $([[ ${config[security]} == 'reality' && ${config[port]} -eq 443 ]] && echo '- 80:8080' || true)
+    $([[ ${config[security]} == 'reality' && ${config[port]} -eq 8443 ]] && echo '- 80:8080' || true)
     $([[ ${config[security]} == 'reality' ]] && echo "- ${config[port]}:8443" || true)
     $([[ ${config[security]} != 'reality' ]] && echo "expose:" || true)
     $([[ ${config[security]} != 'reality' ]] && echo "- 8443" || true)
@@ -620,7 +622,7 @@ echo "
   haproxy:
     image: ${image[haproxy]}
     ports:
-    $([[ ${config[security]} == 'letsencrypt' || ${config[port]} -eq 443 ]] && echo '- 80:8080' || true)
+    $([[ ${config[security]} == 'letsencrypt' || ${config[port]} -eq 8443 ]] && echo '- 80:8080' || true)
     - ${config[port]}:8443
     restart: always
     volumes:
@@ -651,16 +653,16 @@ fi)
 EOF
 }
 
-function generate_rltybot_compose {
-  cat >"${path[rltybot_compose]}" <<EOF
+function generate_rltbot_compose {
+  cat >"${path[rltbot_compose]}" <<EOF
 version: "3"
 services:
-  rltybot:
+  rltbot:
     build: ./
     restart: always
     environment:
-      BOT_TOKEN: ${config[rltybot_token]}
-      BOT_ADMIN: ${config[rltybot_admins]}
+      BOT_TOKEN: ${config[rltbot_token]}
+      BOT_ADMIN: ${config[rltbot_admins]}
     volumes:
     - /var/run/docker.sock:/var/run/docker.sock
     - ../:/opt/rlty
@@ -775,18 +777,18 @@ RUN apk add --no-cache docker-cli-compose curl
 EOF
 }
 
-function generate_rltybot_dockerfile {
-  cat >"${path[rltybot_dockerfile]}" << EOF
+function generate_rltbot_dockerfile {
+  cat >"${path[rltbot_dockerfile]}" << EOF
 FROM ${image[python]}
-WORKDIR /opt/rlty/rltybot
+WORKDIR /opt/rlty/rltbot
 RUN apk add --no-cache docker-cli-compose curl bash newt libqrencode sudo openssl jq
 RUN pip install --no-cache-dir python-telegram-bot==13.5
-CMD [ "python", "./rltybot.py" ]
+CMD [ "python", "./rltbot.py" ]
 EOF
 }
 
-function download_rltybot_script {
-  curl -fsSL https://raw.githubusercontent.com/aleskxyz/rlty/master/rltybot.py -o "${path[rltybot_script]}"
+function download_rltbot_script {
+  curl -fsSL https://raw.githubusercontent.com/koopichi/rlty/main/rltbot.py -o "${path[rltbot_script]}"
 }
 
 function generate_selfsigned_certificate {
@@ -1146,11 +1148,11 @@ function generate_config {
     generate_certbot_dockerfile
     generate_certbot_script
   fi
-  if [[ ${config[rltybot]} == "ON" ]]; then
-    mkdir -p "${config_path}/rltybot"
-    generate_rltybot_compose
-    generate_rltybot_dockerfile
-    download_rltybot_script
+  if [[ ${config[rltbot]} == "ON" ]]; then
+    mkdir -p "${config_path}/rltbot"
+    generate_rltbot_compose
+    generate_rltbot_dockerfile
+    download_rltbot_script
   fi
 }
 
@@ -1406,9 +1408,9 @@ function show_server_config {
   server_config=$server_config$'\n'"Safenet: ${config[safenet]}"
   server_config=$server_config$'\n'"WARP: ${config[warp]}"
   server_config=$server_config$'\n'"WARP License: ${config[warp_license]}"
-  server_config=$server_config$'\n'"Telegram Bot: ${config[rltybot]}"
-  server_config=$server_config$'\n'"Telegram Bot Token: ${config[rltybot_token]}"
-  server_config=$server_config$'\n'"Telegram Bot Admins: ${config[rltybot_admins]}"
+  server_config=$server_config$'\n'"Telegram Bot: ${config[rltbot]}"
+  server_config=$server_config$'\n'"Telegram Bot Token: ${config[rltbot_token]}"
+  server_config=$server_config$'\n'"Telegram Bot Admins: ${config[rltbot_admins]}"
   echo "${server_config}"
 }
 
@@ -1430,8 +1432,8 @@ function restart_menu {
     return
   fi
   restart_docker_compose
-  if [[ ${config[rltybot]} == 'ON' ]]; then
-    restart_rltybot_compose
+  if [[ ${config[rltbot]} == 'ON' ]]; then
+    restart_rltbot_compose
   fi
 }
 
@@ -1517,7 +1519,7 @@ function configuration_menu {
         config_warp_menu
         ;;
       9 )
-        config_rltybot_menu
+        config_rltbot_menu
         ;;
       10 )
         restart_menu
@@ -1634,7 +1636,7 @@ function config_security_menu {
       message_box 'Invalid Configuration' 'You cannot use "reality" TLS certificate with "ws" transport protocol. Change TLS certifcate to "letsencrypt" or "selfsigned" or use other transport protocols'
       continue
     fi
-    if [[ ${security} == 'letsencrypt' && ${config[port]} -ne 443 ]]; then
+    if [[ ${security} == 'letsencrypt' && ${config[port]} -ne 8443 ]]; then
       if lsof -i :80 >/dev/null 2>&1; then
         free_80=false
         for container in $(${docker_cmd} -p ${compose_project} ps -q); do
@@ -1766,64 +1768,64 @@ function config_warp_menu {
   config[warp_license]=$old_warp_license
 }
 
-function config_rltybot_menu {
-  local rltybot
-  local rltybot_token
-  local rltybot_admins
-  local old_rltybot=${config[rltybot]}
-  local old_rltybot_token=${config[rltybot_token]}
-  local old_rltybot_admins=${config[rltybot_admins]}
+function config_rltbot_menu {
+  local rltbot
+  local rltbot_token
+  local rltbot_admins
+  local old_rltbot=${config[rltbot]}
+  local old_rltbot_token=${config[rltbot_token]}
+  local old_rltbot_admins=${config[rltbot_admins]}
   while true; do
-    rltybot=$(whiptail --clear --backtitle "$BACKTITLE" --title "Enable Telegram Bot" \
+    rltbot=$(whiptail --clear --backtitle "$BACKTITLE" --title "Enable Telegram Bot" \
       --radiolist --noitem "Enable Telegram Bot:" $HEIGHT $WIDTH $CHOICE_HEIGHT \
-      "Enable" "$([[ "${config[rltybot]}" == 'ON' ]] && echo 'on' || echo 'off')" \
-      "Disable" "$([[ "${config[rltybot]}" == 'OFF' ]] && echo 'on' || echo 'off')" \
+      "Enable" "$([[ "${config[rltbot]}" == 'ON' ]] && echo 'on' || echo 'off')" \
+      "Disable" "$([[ "${config[rltbot]}" == 'OFF' ]] && echo 'on' || echo 'off')" \
       3>&1 1>&2 2>&3)
     if [[ $? -ne 0 ]]; then
       break
     fi
-    if [[ $rltybot == 'Disable' ]]; then
-      config[rltybot]=OFF
+    if [[ $rltbot == 'Disable' ]]; then
+      config[rltbot]=OFF
       update_config_file
       return
     fi
-    config[rltybot]=ON
+    config[rltbot]=ON
     while true; do
-      rltybot_token=$(whiptail --clear --backtitle "$BACKTITLE" --title "Telegram Bot Token" \
-        --inputbox "Enter Telegram Bot Token:" $HEIGHT $WIDTH "${config[rltybot_token]}" \
+      rltbot_token=$(whiptail --clear --backtitle "$BACKTITLE" --title "Telegram Bot Token" \
+        --inputbox "Enter Telegram Bot Token:" $HEIGHT $WIDTH "${config[rltbot_token]}" \
         3>&1 1>&2 2>&3)
       if [[ $? -ne 0 ]]; then
         break
       fi
-      if [[ ! $rltybot_token =~ ${regex[rltybot_token]} ]]; then
+      if [[ ! $rltbot_token =~ ${regex[rltbot_token]} ]]; then
         message_box "Invalid Input" "Invalid Telegram Bot Token"
         continue
       fi 
-      if ! curl -sSfL "https://api.telegram.org/bot${rltybot_token}/getMe" >/dev/null 2>&1; then
+      if ! curl -sSfL "https://api.telegram.org/bot${rltbot_token}/getMe" >/dev/null 2>&1; then
         message_box "Invalid Input" "Telegram Bot Token is incorrect. Check it again."
         continue
       fi
-      config[rltybot_token]=$rltybot_token
+      config[rltbot_token]=$rltbot_token
       while true; do
-        rltybot_admins=$(whiptail --clear --backtitle "$BACKTITLE" --title "Telegram Bot Admins" \
-          --inputbox "Enter Telegram Bot Admins (Seperate multiple admins by comma ',' without leading '@'):" $HEIGHT $WIDTH "${config[rltybot_admins]}" \
+        rltbot_admins=$(whiptail --clear --backtitle "$BACKTITLE" --title "Telegram Bot Admins" \
+          --inputbox "Enter Telegram Bot Admins (Seperate multiple admins by comma ',' without leading '@'):" $HEIGHT $WIDTH "${config[rltbot_admins]}" \
           3>&1 1>&2 2>&3)
         if [[ $? -ne 0 ]]; then
           break
         fi
-        if [[ ! $rltybot_admins =~ ${regex[rltybot_admins]} || $rltybot_admins =~ .+_$ || $rltybot_admins =~ .+_,.+ ]]; then
+        if [[ ! $rltbot_admins =~ ${regex[rltbot_admins]} || $rltbot_admins =~ .+_$ || $rltbot_admins =~ .+_,.+ ]]; then
           message_box "Invalid Input" "Invalid Username\nThe usernames must separated by ',' without leading '@' character or any extra space."
           continue
         fi
-        config[rltybot_admins]=$rltybot_admins
+        config[rltbot_admins]=$rltbot_admins
         update_config_file
         return
       done
     done
   done
-  config[rltybot]=$old_rltybot
-  config[rltybot_token]=$old_rltybot_token
-  config[rltybot_admins]=$old_rltybot_admins
+  config[rltbot]=$old_rltbot
+  config[rltbot_token]=$old_rltbot_token
+  config[rltbot_admins]=$old_rltbot_admins
 }
 
 function restart_docker_compose {
@@ -1831,9 +1833,9 @@ function restart_docker_compose {
   ${docker_cmd} --project-directory ${config_path} -p ${compose_project} up --build -d --remove-orphans --build
 }
 
-function restart_rltybot_compose {
-  ${docker_cmd} --project-directory ${config_path}/rltybot -p ${rltybot_project} down --remove-orphans --timeout 2 || true
-  ${docker_cmd} --project-directory ${config_path}/rltybot -p ${rltybot_project} up --build -d --remove-orphans --build
+function restart_rltbot_compose {
+  ${docker_cmd} --project-directory ${config_path}/rltbot -p ${rltbot_project} down --remove-orphans --timeout 2 || true
+  ${docker_cmd} --project-directory ${config_path}/rltbot -p ${rltbot_project} up --build -d --remove-orphans --build
 }
 
 function restart_container {
@@ -1961,18 +1963,18 @@ function check_reload {
       md5["$key"]=$(get_md5 "${path[$key]}")
     fi
   done
-  if [[ "${restart[rltybot]}" == 'true' && "${config[rltybot]}" == 'ON' ]]; then
-    restart_rltybot_compose
+  if [[ "${restart[rltbot]}" == 'true' && "${config[rltbot]}" == 'ON' ]]; then
+    restart_rltbot_compose
   fi
-  if [[ "${config[rltybot]}" == 'OFF' ]]; then
-    ${docker_cmd} --project-directory ${config_path}/rltybot -p ${rltybot_project} down --remove-orphans --timeout 2 >/dev/null 2>&1 || true
+  if [[ "${config[rltbot]}" == 'OFF' ]]; then
+    ${docker_cmd} --project-directory ${config_path}/rltbot -p ${rltbot_project} down --remove-orphans --timeout 2 >/dev/null 2>&1 || true
   fi
   if [[ "${restart[compose]}" == 'true' ]]; then
     restart_docker_compose
     return
   fi
   for key in "${!restart[@]}"; do
-    if [[ $key != 'none' && $key != 'rltybot' ]]; then
+    if [[ $key != 'none' && $key != 'rltbot' ]]; then
       restart_container "${key}"
     fi
   done
@@ -2008,9 +2010,9 @@ function generate_file_list {
   path[server_pem]="${config_path}/certificate/server.pem"
   path[server_key]="${config_path}/certificate/server.key"
   path[server_crt]="${config_path}/certificate/server.crt"
-  path[rltybot_script]="${config_path}/rltybot/rltybot.py"
-  path[rltybot_dockerfile]="${config_path}/rltybot/Dockerfile"
-  path[rltybot_compose]="${config_path}/rltybot/docker-compose.yml"
+  path[rltbot_script]="${config_path}/rltbot/rltbot.py"
+  path[rltbot_dockerfile]="${config_path}/rltbot/Dockerfile"
+  path[rltbot_compose]="${config_path}/rltbot/docker-compose.yml"
 
   service[config]='none'
   service[users]='none'
@@ -2023,9 +2025,9 @@ function generate_file_list {
   service[server_pem]='haproxy'
   service[server_key]='engine'
   service[server_crt]='engine'
-  service[rltybot_script]='rltybot'
-  service[rltybot_dockerfile]='compose'
-  service[rltybot_compose]='rltybot'
+  service[rltbot_script]='rltbot'
+  service[rltbot_dockerfile]='compose'
+  service[rltbot_compose]='rltbot'
 
   for key in "${!path[@]}"; do
     md5["$key"]=$(get_md5 "${path[$key]}")
@@ -2081,15 +2083,15 @@ if [[ ${args[menu]} == 'true' ]]; then
 fi
 if [[ ${args[restart]} == 'true' ]]; then
   restart_docker_compose
-  if [[ ${config[rltybot]} == 'ON' ]]; then
-    restart_rltybot_compose
+  if [[ ${config[rltbot]} == 'ON' ]]; then
+    restart_rltbot_compose
   fi
 fi
 if [[ -z "$(${docker_cmd} ls | grep "${path[compose]}" | grep running || true)" ]]; then
   restart_docker_compose
 fi
-if [[ -z "$(${docker_cmd} ls | grep "${path[rltybot_compose]}" | grep running || true)" && ${config[rltybot]} == 'ON' ]]; then
-  restart_rltybot_compose
+if [[ -z "$(${docker_cmd} ls | grep "${path[rltbot_compose]}" | grep running || true)" && ${config[rltbot]} == 'ON' ]]; then
+  restart_rltbot_compose
 fi
 if [[ ${args[server-config]} == true ]]; then
   show_server_config
