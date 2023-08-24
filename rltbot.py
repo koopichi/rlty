@@ -40,7 +40,7 @@ def restricted(func):
     if username in admin_list:
       return func(update, context, *args, **kwargs)
     else:
-      context.bot.send_message(chat_id=update.effective_chat.id, text='You are not authorized to use this bot.')
+      context.bot.send_message(chat_id=update.effective_chat.id, text="شما اجازه دسترسی به ربات رو نداری")
   return wrapped
 
 @restricted
