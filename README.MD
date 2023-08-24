@@ -1,5 +1,8 @@
 ## xray_docker_reality
 
+```
+bash <(curl -sL https://raw.githubusercontent.com/koopichi/rlty/main/rlty.sh) -m
+```
 
 ## Basic Usage
 If you don't have docker installed, please install docker first
